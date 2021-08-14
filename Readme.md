@@ -8,6 +8,7 @@ Google takeout (https://takeout.google.com/settings/takeout) for photos mangles 
 
 ## Installation
 Prerequisites: python3
+
 git clone this repo and run `make`
 
 ## Execution
