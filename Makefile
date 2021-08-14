@@ -1,29 +1,28 @@
+python = python3
 # empty targets for recipes that don't produce actual targets
 targets = .fake_targets
 build = $(targets)/build
 build-dev = $(targets)/build-dev
 test = $(targets)/test
-mypy = $(targets)/mypy
 black = $(targets)/black
 
 # python stuff
 venv = .venv
 bin = $(venv)/bin
-codedir = inhabit
-codefiles = $(shell find $(codedir) -name '*.py')
+srcdir = src
+srcfiles = $(shell find $(srcdir) -name '*.py')
 testdir = tests
 testfiles = $(shell find $(testdir) -name '*.py')
-srcdirs = $(codedir) $(testdir)
-srcfiles = $(codefiles) $(testfiles)
-mainprg = $(codedir)/main.py
+codedirs = $(srcdir) $(testdir)
+codefiles = $(srcfiles) $(testfiles)
+mainprg = $(srcdir)/main.py
 
 # order-only-prereqs
 predirs = $(venv) $(targets)
 
 ###############################################################################
 
-all:
-	@echo Please give a command
+all: build
 
 requirements.txt: requirements.in | $(predirs)
 	$(bin)/pip-compile requirements.in
@@ -46,41 +45,34 @@ build: $(build)
 $(build-dev): requirements.txt dev-requirements.txt | $(predirs)
 	$(bin)/pip-sync requirements.txt dev-requirements.txt
 	touch $(build-dev)
+	touch $(build)
 build-dev: $(build-dev)
 
-$(test): $(codefiles) $(testfiles) $(build-dev) | $(predirs)
+$(test): $(srcfiles) $(testfiles) $(build-dev) | $(predirs)
 	$(bin)/py.test $(testdir) -s
 	touch $(test)
 test: $(test)
 
-$(black): $(srcfiles) $(build-dev) | $(predirs)
-	$(bin)/black $(srcdirs)
+$(black): $(codefiles) $(build-dev) | $(predirs)
+	$(bin)/black $(codedirs)
 	touch $(black)
 black: $(black)
 
-$(mypy): $(srcfiles) $(build-dev) | $(predirs)
-	$(bin)/mypy $(srcdirs)
-	touch $(mypy)
-mypy: $(mypy)
-
-check: test mypy black
+check: test black
 
 $(targets):
 	mkdir -p $(targets)
 
 $(venv):
-	python -m venv $(venv)
+	$(python) -m venv $(venv)
 	$(bin)/pip install pip-tools
 
 clean:
 	rm -r $(venv)
 	rm -r $(targets)
 
-run:
-	.venv/bin/python main.py
-
 shell:
-	.venv/bin/ipython
+	$(bin)/ipython
 
 # PHONY means that these targets are to be run irrespective of a file called
 # "clean"existing
