@@ -63,7 +63,7 @@ def update_datetime(fpath):
         lprint("%s: No timestamp found" % fpath)
         return
     lprint("%s: Updating %s" % (fpath, new_datetime))
-    exif_dict["Exif"][36867] = new_datetime.strftime("%Y:%m:%d %H:%M:%S")
+    exif_dict["Exif"][DATETIMEORIGINAL] = new_datetime.strftime("%Y:%m:%d %H:%M:%S")
     piexif.insert(piexif.dump(exif_dict), fpath)
 
 
